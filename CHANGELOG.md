@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0 (2026-11-10)
+- Added AI answers for typed questions (`api/ask.js`, Vercel AI Gateway): answers draw only on module content, combine sections and link to their sources; falls back to keyword search when unavailable.
+- `content/modules.js` now also exports the content for the server function.
+
 ## 1.0.1 (2026-11-10)
 - Published at https://oab-training.vercel.app via Vercel, auto-deploying from `main`.
 

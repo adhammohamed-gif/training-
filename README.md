@@ -16,6 +16,7 @@ You can link straight to a section with a hash, for example `index.html#trials` 
 
 ```
 index.html            Page shell: layout and script/style links only
+api/ask.js            "Ask" box: AI answers built only from the module content (Vercel Function)
 assets/styles.css     Visual design (colour tokens, light and dark themes)
 assets/app.js         Chat behaviour, navigation, search, quizzes, progress
 content/modules.js    ALL training content: edit this file for updates
@@ -44,9 +45,20 @@ After any edit:
 2. Add a line to `CHANGELOG.md` (date, what changed, reference used).
 3. Have medical/regulatory review confirm the change before release.
 
+## AI answers to typed questions
+
+When a trainee types a question, `api/ask.js` sends it with the full module text to an AI model through **Vercel AI Gateway**. The model answers only from that text, keeps figures exactly as written, and returns the section ids it used, which appear as "Source" chips under the answer.
+
+- **Authentication:** the Vercel project's OIDC token is used automatically; no API key is stored. To use an AI Gateway API key instead, add `AI_GATEWAY_API_KEY` in Vercel → Project → Settings → Environment Variables.
+- **Model:** defaults to `anthropic/claude-haiku-4.5`. To change it, set `AI_GATEWAY_MODEL` to another model ID from the AI Gateway model list.
+- **Cost:** each question sends about 13,000 tokens of training content. AI Gateway's monthly free credit covers light use. Check usage and set a budget in Vercel → AI Gateway.
+- **Fallback:** if the AI service is unavailable (out of credit, offline, or the page is opened as a local file), the box falls back to keyword topic search.
+- **Updating:** AI answers read `content/modules.js`, so content updates apply to both the guided path and the AI answers.
+- **Review:** AI answers can still misstate or omit details. Trainees are told to check key figures in the linked source sections.
+
 ## Migrating to a website later
 
-- **Static hosting** (company web server, Netlify, Vercel, GitHub Pages, SharePoint): upload the folder as-is; `index.html` is the entry point.
+- **Static hosting** (company web server, Netlify, GitHub Pages, SharePoint): upload the folder as-is; `index.html` is the entry point. The guided content works everywhere; the AI answer box needs a server that can run `api/ask.js` (Vercel does this automatically), otherwise it falls back to topic search.
 - **LMS (Moodle, Cornerstone, etc.):** zip the folder and upload it as a web package. It is not SCORM-wrapped yet; add a SCORM wrapper if completion tracking in the LMS is required.
 - **CMS or app rebuild:** `content/modules.js` is plain structured data and can be converted to JSON or imported into a CMS without touching the design.
 

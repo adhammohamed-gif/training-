@@ -10,9 +10,11 @@
     quiz    quick checks: { q, o: [options], c: index of correct option, e: explanation }
     src     sources line
   Keep ids unique. After editing, open index.html in a browser to check.
+  The "Ask" box's AI answers are built only from this file, so updates here
+  change both the guided content and the AI answers.
 */
 /* ============================== CONTENT ============================== */
-window.MODULES = [
+var OAB_MODULES = [
 /* ---------- 1 PATHOPHYSIOLOGY ---------- */
 { id:"pathophysiology", part:"Part A · The disease", title:"Pathophysiology",
 intro:`<div class="eyebrow">Module 1 · Pathophysiology</div>
@@ -485,3 +487,7 @@ quiz:[
 ],
 src:"Content of Modules 1–10."}
 ];
+
+/* Shared by the page (browser) and the AI answer function (api/ask.js). */
+if (typeof window !== "undefined") window.MODULES = OAB_MODULES;
+if (typeof module !== "undefined" && module.exports) module.exports = OAB_MODULES;

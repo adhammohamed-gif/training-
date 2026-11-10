@@ -134,3 +134,7 @@ td.num,.mono{font-family:var(--mono);font-size:12.5px}
   .msg.user .bubble{max-width:90%}
 }
 @media (max-width: 480px){ .rail{inset:0 10% 0 0} .bubble{padding:14px} }
+.thinking{color:var(--muted);font-style:italic;margin:0}
+@media (prefers-reduced-motion: no-preference){.thinking{animation:pulse 1.4s ease-in-out infinite}}
+@keyframes pulse{50%{opacity:.45}}
+.ai p:last-child{margin-bottom:0}
