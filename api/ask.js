@@ -1,16 +1,20 @@
 /*
   "Ask the trainer" endpoint (Vercel Function).
   Builds an answer to a free-text question using ONLY the training content in
-  content/modules.js, via Vercel AI Gateway. Authenticates with the project's
-  Vercel OIDC token (no API key needed on Vercel); AI_GATEWAY_API_KEY is used
-  instead if it is set.
+  content/modules.js.
 
-  Optional environment variable: AI_GATEWAY_MODEL (default below).
+  Provider, in order of preference:
+    1. Claude API, when ANTHROPIC_API_KEY is set (Vercel → Settings → Environment Variables).
+       Optional: ANTHROPIC_MODEL (default claude-haiku-5-5).
+    2. Vercel AI Gateway, using AI_GATEWAY_API_KEY or the project's OIDC token.
+       Optional: AI_GATEWAY_MODEL.
 */
 const MODULES = require("../content/modules.js");
 
 const DEFAULT_MODEL = "anthropic/claude-haiku-4.5";
 const GATEWAY_URL = "https://ai-gateway.vercel.sh/v1/chat/completions";
+const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
+const DEFAULT_CLAUDE_MODEL = "claude-haiku-5-5";
 const MAX_QUESTION = 500;
 
 function strip(html) {
@@ -88,33 +92,17 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const token = getToken(req);
-  if (!token) { res.status(503).json({ error: "AI answers are not configured on this deployment." }); return; }
-
   try {
-    const r = await fetch(GATEWAY_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        model: process.env.AI_GATEWAY_MODEL || DEFAULT_MODEL,
-        temperature: 0,
-        max_tokens: 900,
-        messages: [
-          { role: "system", content: SYSTEM },
-          { role: "user", content: question },
-        ],
-      }),
-    });
+    const result = process.env.ANTHROPIC_API_KEY
+      ? await askClaude(question)
+      : await askGateway(question, getToken(req));
 
-    if (!r.ok) {
-      const detail = await r.text();
-      console.error("AI Gateway error", r.status, detail.slice(0, 500));
-      res.status(502).json({ error: "The AI service did not respond. Showing topic search instead.", status: r.status });
+    if (result.error) {
+      console.error("AI provider error", result.provider, result.status, result.detail);
+      res.status(result.status === 503 ? 503 : 502).json({ error: "The AI service did not respond. Showing topic search instead.", status: result.status });
       return;
     }
-
-    const data = await r.json();
-    const text = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "";
+    const text = result.text;
     const parsed = parseModelJson(text);
     if (!parsed || typeof parsed.answer !== "string") {
       res.status(502).json({ error: "The AI answer could not be read. Showing topic search instead." });
@@ -129,12 +117,56 @@ module.exports = async (req, res) => {
       answer: parsed.answer,
       sources,
       found: parsed.found !== false,
-      model: data.model || process.env.AI_GATEWAY_MODEL || DEFAULT_MODEL,
+      model: result.model,
     });
   } catch (err) {
     console.error("ask handler failed", err);
     res.status(500).json({ error: "Something went wrong. Showing topic search instead." });
   }
 };
+
+async function askClaude(question) {
+  const model = process.env.ANTHROPIC_MODEL || DEFAULT_CLAUDE_MODEL;
+  const r = await fetch(ANTHROPIC_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": process.env.ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 4000,
+      // The long training content is cached between questions to cut cost and latency.
+      system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
+      messages: [{ role: "user", content: question }],
+    }),
+  });
+  if (!r.ok) return { error: true, provider: "claude", status: r.status, detail: (await r.text()).slice(0, 500) };
+  const data = await r.json();
+  const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n");
+  return { text, model: data.model || model };
+}
+
+async function askGateway(question, token) {
+  if (!token) return { error: true, provider: "gateway", status: 503, detail: "No AI credentials configured." };
+  const model = process.env.AI_GATEWAY_MODEL || DEFAULT_MODEL;
+  const r = await fetch(GATEWAY_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({
+      model,
+      max_tokens: 900,
+      messages: [
+        { role: "system", content: SYSTEM },
+        { role: "user", content: question },
+      ],
+    }),
+  });
+  if (!r.ok) return { error: true, provider: "gateway", status: r.status, detail: (await r.text()).slice(0, 500) };
+  const data = await r.json();
+  const text = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "";
+  return { text, model: data.model || model };
+}
 
 function safeJson(s) { try { return JSON.parse(s); } catch { return {}; } }

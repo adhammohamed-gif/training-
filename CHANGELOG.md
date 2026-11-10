@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.0 (2026-11-10)
+- AI answers can now use the Claude API directly (`ANTHROPIC_API_KEY`, default model `claude-haiku-5-5`, with prompt caching); Vercel AI Gateway remains the fallback provider.
+
 ## 1.1.0 (2026-11-10)
 - Added AI answers for typed questions (`api/ask.js`, Vercel AI Gateway): answers draw only on module content, combine sections and link to their sources; falls back to keyword search when unavailable.
 - `content/modules.js` now also exports the content for the server function.

@@ -47,11 +47,14 @@ After any edit:
 
 ## AI answers to typed questions
 
-When a trainee types a question, `api/ask.js` sends it with the full module text to an AI model through **Vercel AI Gateway**. The model answers only from that text, keeps figures exactly as written, and returns the section ids it used, which appear as "Source" chips under the answer.
+When a trainee types a question, `api/ask.js` sends it, together with the full module text, to an AI model. The model answers only from that text, keeps figures exactly as written, and returns the section ids it used. These appear as "Source" buttons under the answer.
 
-- **Authentication:** the Vercel project's OIDC token is used automatically; no API key is stored. To use an AI Gateway API key instead, add `AI_GATEWAY_API_KEY` in Vercel → Project → Settings → Environment Variables.
-- **Model:** defaults to `anthropic/claude-haiku-4.5`. To change it, set `AI_GATEWAY_MODEL` to another model ID from the AI Gateway model list.
-- **Cost:** each question sends about 13,000 tokens of training content. AI Gateway's monthly free credit covers light use. Check usage and set a budget in Vercel → AI Gateway.
+**AI provider (the first one configured is used):**
+1. **Claude API (recommended):** add `ANTHROPIC_API_KEY` in Vercel → Project → Settings → Environment Variables (Production). Optional: `ANTHROPIC_MODEL` (default `claude-haiku-5-5`). The training content is prompt-cached between questions to reduce cost. Set spend limits in the Claude Console.
+2. **Vercel AI Gateway:** used when no Claude key is set. Authenticates with the project's OIDC token or `AI_GATEWAY_API_KEY`; optional `AI_GATEWAY_MODEL`. Needs a card on file in Vercel to unlock free credits.
+
+Environment variable changes apply to the next deployment. Redeploy, or push any commit, after adding a key.
+
 - **Fallback:** if the AI service is unavailable (out of credit, offline, or the page is opened as a local file), the box falls back to keyword topic search.
 - **Updating:** AI answers read `content/modules.js`, so content updates apply to both the guided path and the AI answers.
 - **Review:** AI answers can still misstate or omit details. Trainees are told to check key figures in the linked source sections.
