@@ -6,7 +6,9 @@ An interactive, chat-style training module on overactive bladder (OAB) and mirab
 
 ## How to view it
 
-Open `index.html` in any modern browser. It needs no build step or server and works offline, except for the Google Fonts it loads; if those are blocked, the page falls back to system fonts.
+**Live site:** https://oab-training.vercel.app (hosted on Vercel; every change pushed to `main` is published automatically within about a minute).
+
+To view locally, open `index.html` in any modern browser. It needs no build step or server and works offline, except for the Google Fonts it loads; if those are blocked, the page falls back to system fonts.
 
 You can link straight to a section with a hash, for example `index.html#trials` or `index.html#tr-beyond`.
 
