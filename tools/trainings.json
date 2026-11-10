@@ -1,0 +1,73 @@
+[
+  {
+    "id": "oab",
+    "path": "oab",
+    "title": "OAB & Mirabegron Training",
+    "brand": "OAB & Mirabegron",
+    "brandSmall": "Guided training · 11 sections",
+    "topTitle": "OAB Training",
+    "scripts": [
+      "content/oab.js"
+    ],
+    "storageKey": "oab-training-v1",
+    "welcomeTitle": "Overactive bladder and mirabegron: guided training",
+    "welcomeText": "This module walks you from the disease (pathophysiology to treatment), through the EAU guidelines, to mirabegron's mechanism and its phase 3 trial programme.",
+    "placeholder": "Ask any question, e.g. “Compare BEYOND and BESIDE” or “What does EAU say about older patients?”",
+    "footer": "For internal scientific training. Data are summarised from published literature and EAU guidelines (2025 editions). Always check the locally approved prescribing information (SFDA) before discussing a product with healthcare professionals.",
+    "avatar": "OAB"
+  },
+  {
+    "id": "datroway-hr-breast",
+    "path": "datroway/hr-positive-breast",
+    "title": "Datroway: HR+/HER2− Breast Cancer Training",
+    "brand": "Datroway · HR+/HER2− mBC",
+    "brandSmall": "Guided training · 11 sections",
+    "topTitle": "Datroway · HR+/HER2−",
+    "scripts": [
+      "content/datroway-common.js",
+      "content/datroway-hr-breast.js"
+    ],
+    "storageKey": "datroway-hr-breast-v1",
+    "welcomeTitle": "Datroway in HR+/HER2− metastatic breast cancer: guided training",
+    "welcomeText": "This module covers HR+/HER2− metastatic breast cancer from biology to treatment sequencing, the ESMO and NCCN guideline positions, Datroway's mechanism, the TROPION-Breast01 trial and how to manage its key side effects.",
+    "placeholder": "Ask any question, e.g. “What were the PFS and OS results in TROPION-Breast01?”",
+    "footer": "For internal scientific training. Data are summarised from the US prescribing information, published trials and ESMO/NCCN guidelines (as of November 2026). Check the locally approved prescribing information (SFDA) and local registration status before discussing with healthcare professionals.",
+    "avatar": "DATO"
+  },
+  {
+    "id": "datroway-tnbc",
+    "path": "datroway/tnbc",
+    "title": "Datroway: First-line TNBC Training",
+    "brand": "Datroway · 1L metastatic TNBC",
+    "brandSmall": "Guided training · 11 sections",
+    "topTitle": "Datroway · TNBC",
+    "scripts": [
+      "content/datroway-common.js",
+      "content/datroway-tnbc.js"
+    ],
+    "storageKey": "datroway-tnbc-v1",
+    "welcomeTitle": "Datroway in first-line metastatic TNBC (not candidates for immunotherapy): guided training",
+    "welcomeText": "This module covers triple-negative breast cancer from biology to first-line decision-making, the ESMO and NCCN guideline positions, Datroway's mechanism, the TROPION-Breast02 trial and how to manage its key side effects.",
+    "placeholder": "Ask any question, e.g. “Which patients are not candidates for immunotherapy?”",
+    "footer": "For internal scientific training. Data are summarised from the US prescribing information, published trials and ESMO/NCCN guidelines (as of November 2026). Check the locally approved prescribing information (SFDA) and local registration status before discussing with healthcare professionals.",
+    "avatar": "DATO"
+  },
+  {
+    "id": "datroway-egfr-nsclc",
+    "path": "datroway/egfr-nsclc",
+    "title": "Datroway: EGFR-mutated NSCLC Training",
+    "brand": "Datroway · EGFRm NSCLC",
+    "brandSmall": "Guided training · 11 sections",
+    "topTitle": "Datroway · EGFRm NSCLC",
+    "scripts": [
+      "content/datroway-common.js",
+      "content/datroway-egfr-nsclc.js"
+    ],
+    "storageKey": "datroway-egfr-nsclc-v1",
+    "welcomeTitle": "Datroway in previously treated EGFR-mutated NSCLC: guided training",
+    "welcomeText": "This module covers EGFR-mutated non-small cell lung cancer from biology to post-osimertinib sequencing, the NCCN and ASCO guideline positions, Datroway's mechanism, the TROPION-Lung05 and Lung01 data behind the US accelerated approval, and key side-effect management.",
+    "placeholder": "Ask any question, e.g. “What does accelerated approval mean for this indication?”",
+    "footer": "For internal scientific training. This indication has US accelerated approval only (not EU). Data are summarised from the US prescribing information, published trials and NCCN/ASCO guidelines (as of November 2026). Check SFDA registration status and the local prescribing information before discussing with healthcare professionals.",
+    "avatar": "DATO"
+  }
+]

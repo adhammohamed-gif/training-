@@ -3,49 +3,118 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OAB &amp; Mirabegron Training</title>
+<title>Medical Training Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css">
+<style>
+  /* Home: product sections stacked; each indication is a card that opens its standalone training */
+  body{overflow-y:auto}
+  .home{max-width:1080px;margin:0 auto;padding:40px 20px 56px;display:flex;flex-direction:column;gap:40px}
+  .home-head{display:flex;flex-direction:column;gap:10px;max-width:70ch}
+  .home-head .eyebrow{margin:0}
+  .home-head h1{font-family:var(--display);font-size:clamp(28px,4vw,40px);line-height:1.15;margin:0;text-wrap:balance}
+  .home-head p{margin:0;color:var(--muted);font-size:16px}
+  .product{display:flex;flex-direction:column;gap:14px}
+  .product-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px}
+  .product-head h2{font-family:var(--display);font-size:24px;margin:0}
+  .product-head span{font-size:13px;color:var(--muted)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+  .card{display:flex;flex-direction:column;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s, transform .15s}
+  .card:hover{border-color:var(--accent);transform:translateY(-2px)}
+  @media (prefers-reduced-motion: reduce){.card{transition:none}.card:hover{transform:none}}
+  .card h3{font-family:var(--display);font-size:19px;line-height:1.3;margin:0;text-wrap:balance}
+  .card p{margin:0;font-size:14px;color:var(--muted)}
+  .card dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:4px 0 0;font-size:13px}
+  .card dt{color:var(--muted)}
+  .card dd{margin:0;font-variant-numeric:tabular-nums}
+  .card .go{margin-top:auto;font-weight:600;color:var(--accent);font-size:14px}
+  .tags{display:flex;flex-wrap:wrap;gap:6px}
+  .tag{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+  .tag.warn{border-color:var(--amber);color:var(--amber)}
+  .progress{font-size:12px;color:var(--muted)}
+  .how{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+  .how div b{display:block;font-size:14px;margin-bottom:4px}
+  .how div span{font-size:13.5px;color:var(--muted)}
+  footer{font-size:12px;color:var(--muted);max-width:80ch}
+</style>
 </head>
 <body>
-<div class="app">
-  <aside class="rail" id="rail" aria-label="Training modules">
-    <div class="rail-head">
-      <div class="brand">OAB &amp; Mirabegron<small>Guided training module · 11 sections</small></div>
-      <div class="meter">
-        <div class="meter-row"><span>Content explored</span><span id="pctTxt">0%</span></div>
-        <div class="bar"><span id="pctBar"></span></div>
-        <div class="meter-row"><span>Quick-check score</span><span id="scoreTxt">0 / 0</span></div>
-      </div>
-    </div>
-    <nav class="nav" id="nav"></nav>
-    <div class="rail-foot">
-      <span>For internal scientific training. Data are summarised from published literature and EAU guidelines (2025 editions). Always check the locally approved prescribing information (SFDA) before discussing a product with healthcare professionals.</span>
-      <button class="linkbtn" id="resetBtn" type="button">Reset my progress</button>
-    </div>
-  </aside>
+<main class="home">
+  <header class="home-head">
+    <div class="eyebrow">Medical training hub</div>
+    <h1>Guided product and disease training</h1>
+    <p>Pick a training. Each opens as a chat-style module: read a section, follow the suggested questions, check your knowledge, or type any question to get an answer built from that training's content.</p>
+  </header>
 
-  <main class="main">
-    <div class="topbar">
-      <button class="btn" id="menuBtn" type="button" aria-controls="rail" aria-expanded="false">Modules</button>
-      <strong>OAB Training</strong>
-      <span class="mono" id="topPct">0%</span>
+  <section class="product" aria-labelledby="p-oab">
+    <div class="product-head"><h2 id="p-oab">Mirabegron · Overactive bladder</h2><span>Urology</span></div>
+    <div class="cards">
+      <a class="card" href="oab/" data-key="oab-training-v1">
+        <div class="tags"><span class="tag">11 sections</span><span class="tag">EAU guidelines</span></div>
+        <h3>Overactive bladder and mirabegron</h3>
+        <p>From OAB pathophysiology and diagnosis to EAU guidelines, mirabegron's mechanism and its full phase 3 programme.</p>
+        <dl><dt>Key trials</dt><dd>SCORPIO, ARIES, CAPRICORN, TAURUS, BEYOND, BESIDE, SYNERGY</dd></dl>
+        <span class="progress"></span>
+        <span class="go">Open training →</span>
+      </a>
     </div>
-    <div class="log" id="log" aria-live="polite"><div class="thread" id="thread"></div></div>
-    <div class="composer">
-      <form id="ask">
-        <label for="q" class="sr" style="position:absolute;left:-9999px">Ask a question</label>
-        <input id="q" type="text" autocomplete="off" placeholder="Ask any question, e.g. “Compare BEYOND and BESIDE” or “What does EAU say about older patients?”">
-        <button class="send" type="submit">Ask</button>
-      </form>
-      <div class="hint">Typed questions are answered by AI using only this module's content, with links to the sections used. Or click a chip to follow the guided path.</div>
-    </div>
-  </main>
-</div>
+  </section>
 
-<script src="content/modules.js"></script>
-<script src="assets/app.js"></script>
+  <section class="product" aria-labelledby="p-dato">
+    <div class="product-head"><h2 id="p-dato">Datroway (datopotamab deruxtecan) · Oncology</h2><span>TROP2-directed antibody–drug conjugate · one training per indication</span></div>
+    <div class="cards">
+      <a class="card" href="datroway/hr-positive-breast/" data-key="datroway-hr-breast-v1">
+        <div class="tags"><span class="tag">US · EU approved</span><span class="tag">After ET + chemo</span></div>
+        <h3>HR+/HER2− metastatic breast cancer</h3>
+        <p>Endocrine-resistant disease after endocrine therapy and chemotherapy.</p>
+        <dl><dt>Pivotal trial</dt><dd>TROPION-Breast01</dd><dt>Headline</dt><dd>PFS 6.9 vs 4.9 mo (HR 0.63); OS not different</dd></dl>
+        <span class="progress"></span>
+        <span class="go">Open training →</span>
+      </a>
+      <a class="card" href="datroway/tnbc/" data-key="datroway-tnbc-v1">
+        <div class="tags"><span class="tag">US · EU approved 2026</span><span class="tag">First line</span></div>
+        <h3>Metastatic TNBC, not candidates for immunotherapy</h3>
+        <p>First-line treatment when PD-1/PD-L1 inhibitors are not an option.</p>
+        <dl><dt>Pivotal trial</dt><dd>TROPION-Breast02</dd><dt>Headline</dt><dd>OS 23.7 vs 18.7 mo (HR 0.79); PFS HR 0.57</dd></dl>
+        <span class="progress"></span>
+        <span class="go">Open training →</span>
+      </a>
+      <a class="card" href="datroway/egfr-nsclc/" data-key="datroway-egfr-nsclc-v1">
+        <div class="tags"><span class="tag warn">US accelerated approval only</span><span class="tag">After TKI + platinum</span></div>
+        <h3>EGFR-mutated non-small cell lung cancer</h3>
+        <p>Previously treated with EGFR-directed therapy and platinum chemotherapy.</p>
+        <dl><dt>Key trials</dt><dd>TROPION-Lung05, TROPION-Lung01</dd><dt>Headline</dt><dd>ORR 45%; median DOR 6.5 mo (n=114)</dd></dl>
+        <span class="progress"></span>
+        <span class="go">Open training →</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="how" aria-label="How the trainings work">
+    <div><b>Guided path</b><span>11 sections per training, from the disease to the product evidence.</span></div>
+    <div><b>Follow-up questions</b><span>Ready-made questions after every answer take you deeper.</span></div>
+    <div><b>Quick checks</b><span>Short quizzes in each section and a final assessment.</span></div>
+    <div><b>Ask anything</b><span>Typed questions are answered from that training's content only, with source links.</span></div>
+  </section>
+
+  <footer>For internal scientific training only; not promotional material. Content is summarised from prescribing information, published trials and guidelines (reviewed November 2026). Always check the locally approved prescribing information and registration status (SFDA) before discussing a product with healthcare professionals.</footer>
+</main>
+<script>
+  // Older links like /#trials pointed at the OAB training: forward them there.
+  (function(){
+    var h = location.hash;
+    if (h && h.length > 1) { location.replace("oab/" + h); return; }
+    document.querySelectorAll(".card[data-key]").forEach(function(card){
+      try {
+        var s = JSON.parse(localStorage.getItem(card.dataset.key) || "null");
+        var n = s && s.seen ? Object.keys(s.seen).length : 0;
+        var a = s && s.quiz ? Object.keys(s.quiz).length : 0;
+        if (n || a) card.querySelector(".progress").textContent = "In progress: " + n + " topics viewed, " + a + " quick checks answered";
+      } catch (e) {}
+    });
+  })();
+</script>
 </body>
 </html>

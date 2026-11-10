@@ -1,7 +1,7 @@
 /*
   "Ask the trainer" endpoint (Vercel Function).
-  Builds an answer to a free-text question using ONLY the training content in
-  content/modules.js.
+  Builds an answer to a free-text question using ONLY the content of the training
+  the question was asked in (content/<training>.js).
 
   Provider, in order of preference:
     1. Claude API, when ANTHROPIC_API_KEY is set (Vercel → Settings → Environment Variables).
@@ -9,7 +9,25 @@
     2. Vercel AI Gateway, using AI_GATEWAY_API_KEY or the project's OIDC token.
        Optional: AI_GATEWAY_MODEL.
 */
-const MODULES = require("../content/modules.js");
+// One entry per training. Static require() calls so Vercel bundles every content file.
+const TRAININGS = {
+  "oab": {
+    modules: require("../content/oab.js"),
+    topic: "overactive bladder (OAB) and mirabegron",
+  },
+  "datroway-hr-breast": {
+    modules: require("../content/datroway-hr-breast.js"),
+    topic: "Datroway (datopotamab deruxtecan) in HR-positive, HER2-negative metastatic breast cancer",
+  },
+  "datroway-tnbc": {
+    modules: require("../content/datroway-tnbc.js"),
+    topic: "Datroway (datopotamab deruxtecan) in first-line metastatic triple-negative breast cancer for patients who are not candidates for PD-1/PD-L1 inhibitors",
+  },
+  "datroway-egfr-nsclc": {
+    modules: require("../content/datroway-egfr-nsclc.js"),
+    topic: "Datroway (datopotamab deruxtecan) in previously treated EGFR-mutated non-small cell lung cancer",
+  },
+};
 
 const DEFAULT_MODEL = "anthropic/claude-haiku-4.5";
 const GATEWAY_URL = "https://ai-gateway.vercel.sh/v1/chat/completions";
@@ -28,25 +46,30 @@ function strip(html) {
     .trim();
 }
 
-// Built once per cold start.
-const VALID_IDS = new Set();
-let CONTENT = "";
-for (const m of MODULES) {
-  VALID_IDS.add(m.id);
-  CONTENT += `\n### [id: ${m.id}] ${m.title} (section summary)\n${strip(m.intro)}\nReferences: ${m.src}\n`;
-  for (const x of m.qa) {
-    VALID_IDS.add(x.id);
-    CONTENT += `\n### [id: ${x.id}] ${m.title} > ${x.q}\n${strip(x.a)}\n`;
+// Built once per training per cold start.
+const CACHE = {};
+function getTraining(id) {
+  const key = TRAININGS[id] ? id : "oab";
+  if (CACHE[key]) return CACHE[key];
+  const { modules, topic } = TRAININGS[key];
+  const validIds = new Set();
+  let content = "";
+  for (const m of modules) {
+    validIds.add(m.id);
+    content += `\n### [id: ${m.id}] ${m.title} (section summary)\n${strip(m.intro)}\nReferences: ${m.src}\n`;
+    for (const x of m.qa) {
+      validIds.add(x.id);
+      content += `\n### [id: ${x.id}] ${m.title} > ${x.q}\n${strip(x.a)}\n`;
+    }
   }
-}
-
-const SYSTEM = `You are the trainer assistant inside an internal scientific training module on overactive bladder (OAB) and mirabegron, used by pharmaceutical company trainees.
+  const CONTENT = content;
+  const system = `You are the trainer assistant inside an internal scientific training module on ${topic}, used by pharmaceutical company trainees.
 
 Answer the trainee's question using ONLY the TRAINING CONTENT below. Rules:
 1. Use only facts stated in the content. Never add outside knowledge, studies, numbers, guideline statements or recommendations that are not in it.
 2. Combine information from several sections when the question needs it (comparisons, summaries, "which trials...", etc.).
 3. Copy numbers exactly as written: n, %, mean changes, differences, 95% CIs, p-values, doses, strength ratings.
-4. Keep fair balance: when relevant, include limitations, non-significant or unmet endpoints (e.g. BEYOND non-inferiority not demonstrated), safety cautions and contraindications that the content states.
+4. Keep fair balance: when relevant, include limitations, non-significant or unmet endpoints, accelerated-approval status, safety warnings and contraindications that the content states.
 5. If the content does not cover the question, or only covers part of it, say plainly what is not covered. Do not guess. If nothing relevant exists, set "found" to false.
 6. No patient-specific medical advice. For prescribing questions, give what the content says and note that the locally approved prescribing information applies.
 7. Answer in the language the question is written in (for example Arabic or English). Keep drug names, trial names and numbers in their original form.
@@ -60,6 +83,9 @@ Return ONLY a JSON object, no other text:
 TRAINING CONTENT
 ================
 ${CONTENT}`;
+  CACHE[key] = { system, validIds };
+  return CACHE[key];
+}
 
 function getToken(req) {
   return (
@@ -86,6 +112,7 @@ module.exports = async (req, res) => {
 
   const body = typeof req.body === "string" ? safeJson(req.body) : req.body || {};
   const question = String((body && body.question) || (req.query && req.query.q) || "").trim();
+  const training = getTraining(String((body && body.training) || (req.query && req.query.t) || "oab"));
   if (!question) { res.status(400).json({ error: "No question received." }); return; }
   if (question.length > MAX_QUESTION) {
     res.status(400).json({ error: `Please keep questions under ${MAX_QUESTION} characters.` });
@@ -94,8 +121,8 @@ module.exports = async (req, res) => {
 
   try {
     const result = process.env.ANTHROPIC_API_KEY
-      ? await askClaude(question)
-      : await askGateway(question, getToken(req));
+      ? await askClaude(question, training.system)
+      : await askGateway(question, training.system, getToken(req));
 
     if (result.error) {
       console.error("AI provider error", result.provider, result.status, result.detail);
@@ -110,7 +137,7 @@ module.exports = async (req, res) => {
     }
 
     const sources = Array.isArray(parsed.sources)
-      ? parsed.sources.map(String).filter((id) => VALID_IDS.has(id)).slice(0, 5)
+      ? parsed.sources.map(String).filter((id) => training.validIds.has(id)).slice(0, 5)
       : [];
 
     res.status(200).json({
@@ -125,7 +152,7 @@ module.exports = async (req, res) => {
   }
 };
 
-async function askClaude(question) {
+async function askClaude(question, SYSTEM) {
   const model = process.env.ANTHROPIC_MODEL || DEFAULT_CLAUDE_MODEL;
   const r = await fetch(ANTHROPIC_URL, {
     method: "POST",
@@ -148,7 +175,7 @@ async function askClaude(question) {
   return { text, model: data.model || model };
 }
 
-async function askGateway(question, token) {
+async function askGateway(question, SYSTEM, token) {
   if (!token) return { error: true, provider: "gateway", status: 503, detail: "No AI credentials configured." };
   const model = process.env.AI_GATEWAY_MODEL || DEFAULT_MODEL;
   const r = await fetch(GATEWAY_URL, {

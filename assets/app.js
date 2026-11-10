@@ -1,7 +1,9 @@
-/* OAB & Mirabegron guided training: APP LOGIC (no content here; see content/modules.js) */
+/* Guided training engine: APP LOGIC shared by every training.
+   Content lives in content/<training>.js (window.MODULES); page settings in window.TRAINING. */
+const T = window.TRAINING || {};
 const MODULES = window.MODULES;
 /* ============================== STATE ============================== */
-const STORE_KEY = "oab-training-v1";
+const STORE_KEY = T.storageKey || "oab-training-v1";
 let state = { seen:{}, quiz:{} };
 try { const s = JSON.parse(localStorage.getItem(STORE_KEY) || "null"); if (s && s.seen && s.quiz) state = s; } catch(e){}
 function save(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){} }
@@ -38,7 +40,7 @@ function renderNav(){
     const st = moduleStatus(m);
     html += `<button class="mod ${st} ${activeModule===m.id?"active":""}" data-open="${m.id}" type="button"><span class="num">${st==="done"?"✓":i+1}</span><span class="t">${m.title}</span></button>`;
     if (m.id === "trials"){
-      html += `<div class="sub">` + m.qa.map(x => `<button type="button" data-ask="${x.id}" class="${state.seen[x.id]?"seen":""}">${x.tag}</button>`).join("") + `</div>`;
+      html += `<div class="sub">` + m.qa.map(x => `<button type="button" data-ask="${x.id}" class="${state.seen[x.id]?"seen":""}">${esc(x.tag || x.q)}</button>`).join("") + `</div>`;
     }
   });
   nav.innerHTML = html;
@@ -66,7 +68,7 @@ function addTrainer(html, chips){
   if (chips && chips.length){
     chipHtml = `<div class="chips">` + chips.map(c => `<button type="button" class="chip ${c.cls||""}" ${c.attr}>${esc(c.label)}</button>`).join("") + `</div>`;
   }
-  d.innerHTML = `<div class="avatar" aria-hidden="true">OAB</div><div class="bubble">${html}${chipHtml}</div>`;
+  d.innerHTML = `<div class="avatar" aria-hidden="true">${esc(T.avatar || "OAB")}</div><div class="bubble">${html}${chipHtml}</div>`;
   thread.appendChild(d);
   return d;
 }
@@ -196,7 +198,7 @@ document.getElementById("ask").addEventListener("submit", async ev => {
   try {
     if (location.protocol === "http:" || location.protocol === "https:"){
       const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 30000);
-      const r = await fetch("/api/ask", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ question:v }), signal: ctrl.signal });
+      const r = await fetch("/api/ask", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ question:v, training: T.id || "oab" }), signal: ctrl.signal });
       clearTimeout(timer);
       if (r.ok) data = await r.json();
     }
@@ -236,7 +238,7 @@ document.getElementById("resetBtn").addEventListener("click", () => {
 
 function welcome(){
   const road = MODULES.map((m,i) => `<button type="button" data-open="${m.id}"><span class="n">${String(i+1).padStart(2,"0")}</span><span>${m.title}</span></button>`).join("");
-  addTrainer(`<div class="eyebrow">Welcome</div><h2>Overactive bladder and mirabegron: guided training</h2><p>This module walks you from the disease (pathophysiology to treatment), through the EAU guidelines, to mirabegron's mechanism and its phase 3 trial programme. Open a section, read the summary, then use the follow-up chips to go deeper. Quick checks at the end of each section test what you've learned.</p><div class="roadmap">${road}</div>`);
+  addTrainer(`<div class="eyebrow">Welcome</div><h2>${T.welcomeTitle || "Guided training"}</h2><p>${T.welcomeText || ""} Open a section, read the summary, then use the follow-up chips to go deeper. Quick checks at the end of each section test what you've learned.</p><div class="roadmap">${road}</div>`);
 }
 
 /* Boot */

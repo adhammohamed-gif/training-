@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.0 (2026-11-10)
+- Added a home page linking all trainings; the OAB training moved to `/oab/` (old `/#section` links are forwarded).
+- Added three standalone Datroway trainings: HR+/HER2− metastatic breast cancer, first-line metastatic TNBC (not IO candidates) and EGFR-mutated NSCLC, each with 11 sections, quizzes and AI answers.
+- Shared engine for all trainings: pages generated from `tools/trainings.json`; AI endpoint answers from the content of the training the question was asked in.
+- `content/modules.js` renamed to `content/oab.js`.
+
 ## 1.2.0 (2026-11-10)
 - AI answers can now use the Claude API directly (`ANTHROPIC_API_KEY`, default model `claude-haiku-5-5`, with prompt caching); Vercel AI Gateway remains the fallback provider.
 
